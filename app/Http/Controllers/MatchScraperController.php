@@ -9,9 +9,6 @@ use App\Models\Event;
 class MatchScraperController extends Controller
 {
     //
-
-
-
     public function filter(Request $request)
     {
         //設定預設值 

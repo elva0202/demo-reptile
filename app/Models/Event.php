@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Event extends Model
 {
     // use HasFactory;
-
-    protected $table = 'new_table';
+    //對應資料表
+    protected $table = 'events';
     public $timestamps = false;
 
+    //允許批量賦予
     protected $fillable = [
         'eventid',//
         'number',//
