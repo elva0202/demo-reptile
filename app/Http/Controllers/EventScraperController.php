@@ -92,6 +92,9 @@ class EventScraperController extends Controller
 
                 //$gametime有值進行格式化，沒有返回null
                 $formattedGametime = $gametime ? $gametime->format('Y-m-d H:i:s') : null;
+                $formattedNegativeOdds = number_format((float) $negative_odds, 2);
+                $formattedWinningOdds = number_format((float) $winning_odds, 2);
+
                 // 儲存數據到資料庫中，如果已存在則更新，否則創建新紀錄
                 Event::updateOrCreate(
                     ['eventid' => $eventid],
@@ -99,11 +102,11 @@ class EventScraperController extends Controller
                         'eventid' => $eventid,
                         'number' => $number,
                         'event' => $event,
-                        'gametime' => $gametime,
+                        'gametime' => $formattedGametime,
                         'away_team' => $away_team,
                         'home_team' => $home_team,
-                        'negative_odds' => $negative_odds,
-                        'winning_odds' => $winning_odds,
+                        'negative_odds' => $formattedNegativeOdds,
+                        'winning_odds' => $formattedWinningOdds,
                         'data_Sources' => $data_Sources
                     ]
 
@@ -157,8 +160,11 @@ class EventScraperController extends Controller
     {
         if (isset($cells[6])) {
             if (preg_match_all('/<a\b[^>]*>(.*?)<\/a>/is', $cells[6]->ownerDocument->saveHTML($cells[6]), $matches)) {
-                return isset($matches[1][0]) ? $this->cleanData($matches[1][0]) : 'N/A';
-
+                if (isset($matches[1][0])) {
+                    $odds = $this->cleanData($matches[1][0]);
+                    //格式化為小數點後兩位
+                    return number_format((float) $odds, 2);
+                }
             }
         }
         return 'N/A';
@@ -168,7 +174,11 @@ class EventScraperController extends Controller
     {
         if (isset($cells[6])) {
             if (preg_match_all('/<a\b[^>]*>(.*?)<\/a>/is', $cells[6]->ownerDocument->saveHTML($cells[6]), $matches)) {
-                return isset($matches[1][1]) ? $this->cleanData($matches[1][1]) : 'N/A';
+                if (isset($matches[1][1])) {
+                    $odds = $this->cleanData($matches[1][1]);
+                    //格式化為小數點後
+                    return number_format((float) $odds, 2);
+                }
             }
         }
         return 'N/A';
