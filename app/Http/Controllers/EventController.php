@@ -8,6 +8,7 @@ use Illuminate\view\view;
 
 class EventController extends Controller
 {
+    //顯示視圖
     public function showPage()
     {
         return view('event');  // 返回 resources/views/event.blade.php 視圖
@@ -53,7 +54,7 @@ class EventController extends Controller
     //處理請求顯示所有事件
     public function index(Request $request)
     {
-        //獲取所有數據
+        //從event中獲得所有數據整合成一個陣列
         $events = Event::all();
         return response()->json($events);
     }

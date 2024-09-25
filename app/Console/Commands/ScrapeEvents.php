@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\EventScraperService;
 use Illuminate\Console\Command;
 use App\Http\Controllers\EventScraperController;
 
@@ -24,14 +25,17 @@ class ScrapeEvents extends Command
      */
     protected $description = 'Scrape events and store data in the database';
 
+    protected $scraperService;
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(EventscraperService $scraperService)
     {
         parent::__construct();
+        //注入
+        $this->scraperService = $scraperService;
     }
 
     /**
@@ -42,11 +46,10 @@ class ScrapeEvents extends Command
     //Artisan 命令來觸發數據的自動爬取和存儲流程
     public function handle()
     {
-        $scraper = new EventScraperController();
-        $scraper->fetchEvent();//
-
+        $this->scraperService->fetchEvent();
         $this->info('Events scraped and stored successfully.');
-
+        //成功時返回0
+        return 0;
     }
 
 }
