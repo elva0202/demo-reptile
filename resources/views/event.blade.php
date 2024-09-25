@@ -117,7 +117,7 @@
                 },
                 async buttonOneClick() {
                     try {
-                        const response = await fetch('../api/fechlist.php');
+                        const response = await fetch('/load-matches');
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
@@ -128,12 +128,12 @@
                     }
                 },
                 loadMatches(minOdds, teamkeyword, minimumthreshold) {
-                    try {
+                    try{
                         $.ajax({
                             url: '/load-matches',
                             type: 'POST',
                             data: {
-                                table: 'new_table',
+                                table: 'events',
                                 minOdds: minOdds,
                                 teamkeyword: teamkeyword,
                                 minimumthreshold: minimumthreshold
