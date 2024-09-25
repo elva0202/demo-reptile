@@ -20,7 +20,7 @@ Route::get('/', function () {
     return view('event');
 });
 // 處理AJAX請求路由App\Http\Controllers\
-Route::post('/load-matches', [EventController::class, 'loadMatches']);
+Route::any('/load-matches', [EventController::class, 'loadMatches']);
 //API請求返回JSON格式的所有事件數據
 Route::get('api/events', [EventController::class, 'index']);
 //網頁顯示所有事件路由，渲染

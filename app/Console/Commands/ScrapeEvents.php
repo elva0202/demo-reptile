@@ -34,7 +34,6 @@ class ScrapeEvents extends Command
     public function __construct(EventscraperService $scraperService)
     {
         parent::__construct();
-        //注入
         $this->scraperService = $scraperService;
     }
 
