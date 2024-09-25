@@ -12,7 +12,7 @@ class EventScraperController extends Controller
     public function fetchEvent()
     {
         //爬取目標網站
-        $url = "https://cp.zgzcw.com/lottery/jcplayvsForJsp.action?lotteryId=26&issue=2024-09-22";
+        $url = "https://cp.zgzcw.com/lottery/jcplayvsForJsp.action?lotteryId=26&issue=2024-09-21";
 
         //使用Http Client取代cURL 使用get請求
         $response = Http::get($url);
@@ -78,17 +78,17 @@ class EventScraperController extends Controller
                 $data_Sources = $this->extractDataSources($cells);
 
                 // 在此處進行調試輸出，確認提取到的數據是否正確
-                // dump([
-                //     'eventid' => $eventid,
-                //     'number' => $number,
-                //     'event' => $event,
-                //     'gametime' => $gametime,
-                //     'away_team' => $away_team,
-                //     'home_team' => $home_team,
-                //     'negative_odds' => $negative_odds,
-                //     'winning_odds' => $winning_odds,
-                //     'data_Sources' => $data_Sources,
-                // ]);
+                dump([
+                    'eventid' => $eventid,
+                    'number' => $number,
+                    'event' => $event,
+                    'gametime' => $gametime,
+                    'away_team' => $away_team,
+                    'home_team' => $home_team,
+                    'negative_odds' => $negative_odds,
+                    'winning_odds' => $winning_odds,
+                    'data_Sources' => $data_Sources,
+                ]);
 
                 //$gametime有值進行格式化，沒有返回null
                 $formattedGametime = $gametime ? $gametime->format('Y-m-d H:i:s') : null;
