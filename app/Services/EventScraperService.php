@@ -9,20 +9,18 @@ class EventScraperService
 {
     protected $url;
     //構造函數實例化會自動執行
-    public function __construct(Request $request)
+    public function __construct()
     {   //將目標URL 賦值給$url
-        $this->url = 'https://cp.zgzcw.com/lottery/jcplayvsForJsp.action?lotteryId=26&issue=2024-09-24';
+        $this->url = 'https://cp.zgzcw.com/lottery/jcplayvsForJsp.action?lotteryId=26&issue=2024-09-26';
     }
 
     public function fetchEvent()
     {
         //使用Http Client取代cURL 使用get請求
         $response = Http::get($this->url);
-        dump($response);
 
         //檢查請求是否成功
         if ($response->successful()) {
-            dump($response);
             //請求成功返回HTML內容
             $htmlContent = $response->body();
             //返回的html內容傳給processHtmlContent，進一步解析
@@ -76,17 +74,6 @@ class EventScraperService
                 $negative_odds = $this->extractNegativeOdds($cells);
                 $winning_odds = $this->extractWinningOdds($cells);
                 $data_Sources = $this->extractDataSources($cells);
-                // dump([
-                //     'eventid' => $eventid,
-                //     'number' => $number,
-                //     'event' => $event,
-                //     'gametime' => $gametime,
-                //     'away_team' => $away_team,
-                //     'home_team' => $home_team,
-                //     'negative_odds' => $negative_odds,
-                //     'winning_odds' => $winning_odds,
-                //     'data_Sources' => $data_Sources,
-                // ]);
 
                 //$gametime有值進行格式化，沒有返回null
                 $formattedGametime = $gametime ? $gametime->format('Y-m-d H:i:s') : null;
@@ -95,7 +82,9 @@ class EventScraperService
 
                 // 儲存數據到資料庫中，如果已存在則更新，否則創建新紀錄
                 Event::updateOrCreate(
+                    //查尋條件
                     ['eventid' => $eventid],
+                    //更新內容
                     [
                         'eventid' => $eventid,
                         'number' => $number,
@@ -103,14 +92,58 @@ class EventScraperService
                         'gametime' => $formattedGametime,
                         'away_team' => $away_team,
                         'home_team' => $home_team,
-                        'negative_odds' => $formattedNegativeOdds,
-                        'winning_odds' => $formattedWinningOdds,
+                        'negative_odds' => $negative_odds,
+                        'winning_odds' => $winning_odds,
                         'data_Sources' => $data_Sources,
                     ]
 
                 );
             }
         }
+    }
+
+    public function getFilteredMatches(Request $request)
+    {
+        // 從請求中獲取篩選條件
+        $minOdds = $request->input('minOdds', 0);
+        $teamkeyword = $request->input('teamkeyword', '');
+        $minimumthreshold = $request->input('minimumthreshold', 0);
+        \Log::info('接收到的隊名關鍵字:', ['teamkeyword' => $teamkeyword]);
+
+        // 查詢資料庫，篩選符合條件的比賽數據
+        $query = Event::query();
+
+        // 清理並篩選隊伍名稱
+        $teamkeyword = trim($teamkeyword);
+        if (!empty($teamkeyword)) {
+            $query->where(function ($q) use ($teamkeyword) {
+                $q->where('away_team', 'like', "%$teamkeyword%")
+                    ->orWhere('home_team', 'like', "%$teamkeyword%");
+            });
+        }
+
+        // 賠率篩選 (需要確保 OR 和 AND 條件優先級正確)
+        if ($minOdds > 0) {
+            $query->where(function ($q) use ($minOdds) {
+                $q->where('negative_odds', '>=', $minOdds)
+                    ->orWhere('winning_odds', '>=', $minOdds);
+            });
+        }
+
+        // 閥值篩選 (需要確保 OR 和 AND 條件優先級正確)
+        if ($minimumthreshold > 0) {
+            $query->where(function ($q) use ($minimumthreshold) {
+                $q->where('negative_odds', '>=', $minimumthreshold)
+                    ->orWhere('winning_odds', '>=', $minimumthreshold);
+            });
+        }
+
+
+
+        // 獲取篩選結果
+        return $query->get();
+
+
     }
 
     protected function extractEventId($row)

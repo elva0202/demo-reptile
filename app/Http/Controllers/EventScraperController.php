@@ -9,6 +9,9 @@ use App\Services\EventScraperService;
 
 class EventScraperController extends Controller
 {
+
+
+
     protected $scraperService;
     //構造函數，依賴注入EventScraperService
     //每次創建EventScraperService自動注入服務

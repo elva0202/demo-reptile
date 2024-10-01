@@ -21,14 +21,10 @@ Route::get('/', function () {
 });
 // 處理AJAX請求路由App\Http\Controllers\
 Route::any('/load-matches', [EventController::class, 'loadMatches']);
-//API請求返回JSON格式的所有事件數據
-Route::get('api/events', [EventController::class, 'index']);
 //網頁顯示所有事件路由，渲染
-Route::get('events', [EventController::class, 'showEvents']);
-//顯示所有事件網頁
-Route::get('/events', [EventController::class, 'showPage']);
-// 調用 EventScraperController 的 fetchEvent 方法
-Route::get('/fetch-events', [EventScraperController::class, 'fetchEvent']);
+// Route::get('events', [EventController::class, 'showEvents']);
+
+
 
 
 

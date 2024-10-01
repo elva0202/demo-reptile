@@ -15,6 +15,7 @@ class ScrapeEvents extends Command
      *
      * @var string
      */
+    //命令
     protected $signature = 'event:scrape';
 
 
@@ -25,27 +26,30 @@ class ScrapeEvents extends Command
      */
     protected $description = 'Scrape events and store data in the database';
 
-    protected $scraperService;
+    // protected $scraperService;
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct(EventscraperService $scraperService)
-    {
+    public function __construct()
+    {   //調用構建函數
         parent::__construct();
-        $this->scraperService = $scraperService;
     }
 
-    /**
+    /**    protected $description = 'Scrape events and store data in the database';
+
      * Execute the console command.
      *
      * @return int
      */
     //Artisan 命令來觸發數據的自動爬取和存儲流程
-    public function handle()
-    {
-        $this->scraperService->fetchEvent();
+    public function handle(
+        EventScraperService $scraperService
+    ) {   //解析EventScraperService
+        // $scraperService = app(EventScraperService::class);
+        //調用獲取scrap
+        $scraperService->fetchEvent();
         $this->info('Events scraped and stored successfully.');
         //成功時返回0
         return 0;

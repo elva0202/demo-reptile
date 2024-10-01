@@ -18,10 +18,11 @@ use App\Http\Controllers\EventScraperController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
 Route::apiResource('events', App\Http\Controllers\EventController::class);
 Route::get('/match/filter', [MatchScraperController::class, 'filter']);
 Route::get('/fetch-event', [EventScraperController::class, 'fetchEvent']);
+

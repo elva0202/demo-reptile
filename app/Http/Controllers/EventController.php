@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
-use Illuminate\view\view;
+use Illuminate\View\View;
+use App\Services\EventScraperService;
+
 
 class EventController extends Controller
 {
+    protected $scraperService;
+
+    public function __construct(EventScraperService $scraperService)
+    {
+        $this->scraperService = $scraperService;
+    }
+
     //顯示視圖
     public function showPage()
     {
@@ -15,32 +24,15 @@ class EventController extends Controller
     }
     public function loadMatches(Request $request)
     {
-        // 從請求中獲取篩選條件
-        $minOdds = $request->input('minOdds', 0);
-        $teamkeyword = $request->input('teamkeyword', '');
-        $minimumthreshold = $request->input('minimumthreshold', 0);
-
-        // 查詢資料庫，篩選符合條件的比賽數據
-        $query = Event::query();
-
-        if (!empty($teamkeyword)) {
-            $query->where('away_team', 'like', "%$teamkeyword%")
-                ->orWhere('home_team', 'like', "%$teamkeyword%");
-        }
-
-        if ($minOdds > 0) {
-            $query->where('negative_odds', '>=', $minOdds)
-                ->orWhere('winning_odds', '>=', $minOdds);
-        }
-
-        if ($minimumthreshold > 0) {
-            $query->where('negative_odds', '>=', $minimumthreshold)
-                ->orWhere('winning_odds', '>=', $minimumthreshold);
-        }
-
+        //請求數據進行驗證
+        $request->validate([
+            //賠率為依序進行驗證，必填，數值，區間範圍0~99'bail', 
+            'minOdds' => ['bail', 'required', 'numeric', 'min:0', 'max:99'],
+            //隊伍可為空，字串，簡體中文'nullable'
+            'teamkeyword' => ['nullable', 'string'],
+        ]);
         // 獲取篩選結果
-        $matches = $query->get();
-
+        $matches = $this->scraperService->getFilteredMatches($request);
         // 返回 JSON 格式的篩選結果
         return response()->json($matches);
     }

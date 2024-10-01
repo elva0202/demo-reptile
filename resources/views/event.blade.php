@@ -29,32 +29,32 @@
     <!-- 添加 #app 元素，讓 Vue 能正確掛載 -->
     <div id="app">
         <!-- 篩選條件表單 -->
-        <label>隊伍:</label>
-        <input type="text" v-model="teamfilter" required placeholder="輸入隊名關鍵字">
+        <label>队名:</label>
+        <input type="text" v-model="teamfilter" required placeholder="输入队名关键字">
 
-        <label>賠率:</label>
-        <input type="number" v-model="oddsfilter" required placeholder="輸入賠率" step="0.01">
-        <button @click="filterbutton">查詢</button>
+        <label>赔率:</label>
+        <input type="number" v-model="oddsfilter" required placeholder="输入赔率" step="0.01">
+        <button @click="filterbutton">查询</button>
         <br>
-        <label>閥值</label>
-        <input type="number" v-model="threshold" required placeholder="輸入閥值" step="0.01">
+        <label>阀值</label>
+        <input type="number" v-model="threshold" required placeholder="输入阀值" step="0.01">
         <br>
-        <button @click="buttonOneClick">按鈕 API</button>
-        <button @click="loadMatches">按鈕 ajax</button>
+        <button @click="buttonOneClick">API按钮</button>
+        <button @click="loadMatches">ajax按钮</button>
 
         <table v-if="filteredMatches.length > 0" border="1" cellpadding="10" cellspacing="0">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>比賽ID</th>
-                    <th>編號</th>
-                    <th>賽事</th>
-                    <th>開始時間</th>
-                    <th>客隊</th>
-                    <th>主隊</th>
-                    <th>負賠率</th>
-                    <th>贏賠率</th>
-                    <th>來源</th>
+                    <th>比赛ID</th>
+                    <th>编号</th>
+                    <th>赛事</th>
+                    <th>开始时间</th>
+                    <th>客队</th>
+                    <th>主队</th>
+                    <th>负赔率</th>
+                    <th>赢赔率</th>
+                    <th>来源</th>
                 </tr>
             </thead>
             <tbody>
@@ -104,31 +104,56 @@
             },
             methods: {
                 filterbutton() {
-                    var minOdds = this.oddsfilter
-                    var teamkeyword = this.teamfilter
-                    var minimumthreshold = this.threshold
-                    if (isNaN(minOdds)) {
-                        minOdds = 0;
+                    //清空錯誤訊息
+                    this.errors = {};
+                    // 初始化驗證標誌
+                    let isValid = true;
+                    // 解析並驗證賠率
+                    let minOdds = parseFloat(this.oddsfilter);
+                    if (isNaN(minOdds) || minOdds < 0 || minOdds > 99) {
+                        console.log('賠率必須是0到99之間');
+                        isValid = false;
                     }
+
+                // 去除隊名首尾的空格
+                let teamkeyword = this.teamfilter.trim();
+                console.log(this.teamfilter);
+                // 如果隊名不符合簡體中文
+                // if (teamkeyword && typeof teamkeyword !== 'string') {
+                //     console.log('隊名必須是字串');
+                //     isValid = false;
+                //     }
+                // 驗證失敗時不發送請求
+                    if (!isValid) {
+                    return;
+                    }
+
+                // 驗證通過，發送請求
+                    let minimumthreshold = parseFloat(this.threshold);
                     if (isNaN(minimumthreshold)) {
                         minimumthreshold = 0;
                     }
-                    this.loadMatches(minOdds, teamkeyword, minimumthreshold);
+
+                   this.loadMatches(minOdds, teamkeyword, minimumthreshold);
                 },
+
                 async buttonOneClick() {
-                    try {
-                        const response = await fetch('/load-matches');
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        const data = await response.json();
-                        this.matches = data;
-                    } catch (error) {
-                        console.error('API 請求失敗:', error);
+                try {
+                  const response = await fetch('/load-matches');
+                  if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                 this.matches = data;
+             } catch (error) {
+                   console.error('API 请求失败:', error);
                     }
-                },
+                  },
+
                 loadMatches(minOdds, teamkeyword, minimumthreshold) {
                     try{
+                        console.log('發送的隊名篩選:', teamkeyword);  // 確認是否正確發送隊名數據
+
                         $.ajax({
                             url: '/load-matches',
                             type: 'POST',
@@ -139,14 +164,16 @@
                                 minimumthreshold: minimumthreshold
                             },
                             success: (data) => {
-                                if (Array.isArray(data)) {
-                                    this.matches = data;
-                                } else {
-                                    console.error('返回的數據格式不正確', data);
-                                }
-                            },
+    console.log('返回的數據:', data); // 打印返回的數據
+    if (Array.isArray(data)) {
+        this.matches = data;
+    } else {
+        console.error('返回的數據格式不正確', data);
+    }
+},
                             error: (xhr, status, error) => {
                                 console.error('AJAX 請求失敗:', status, error);
+                                console.error('HTTP狀態碼')
                             }
                         });
                     } catch (error) {
@@ -155,7 +182,7 @@
                 }
             },
             mounted() {
-                this.loadMatches(0, '', 0);
+                // this.loadMatches(0, '', 0);
             }
         });
 
